@@ -1,12 +1,35 @@
 #include <random>
 #include <iostream>
+#include <fstream>
 #include <chrono>
 #include <numeric>
 #include <functional>
+#include <algorithm>
+#include <vector>
 
 #include "system.h"
 
 void System::initialize()
+{
+
+	face_centered_cubic();
+
+	for (auto i = 0; i < m_num_particles; ++i)
+	{
+		find_neighbors(i);
+	}
+
+
+	std::ofstream outfile;
+	outfile.open("C:\\Users\\User\\mipt\\supercomputers\\Project1\\data\\energy_k.txt", std::ofstream::out | std::ofstream::trunc);
+	outfile.close();
+	outfile.open("C:\\Users\\User\\mipt\\supercomputers\\Project1\\data\\energy_p.txt", std::ofstream::out | std::ofstream::trunc);
+	outfile.close();
+	outfile.open("C:\\Users\\User\\mipt\\supercomputers\\Project1\\data\\energy_t.txt", std::ofstream::out | std::ofstream::trunc);
+	outfile.close();
+}
+
+void System::random()
 {
 	static unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 	std::default_random_engine generator(seed);
@@ -16,47 +39,121 @@ void System::initialize()
 
 	static std::default_random_engine dre;
 
-	static std::uniform_real_distribution <> uid_x(0.0, 2.0f * (m_num_blocks - 1.0f));
-	static std::uniform_real_distribution <> uid_y(0.0, 2.0f * (m_num_blocks - 1.0f));
-	static std::uniform_real_distribution <> uid_z(0.0, 2.0f * (m_num_blocks - 1.0f));
+	static std::uniform_real_distribution < float > uid_x(0.0, m_cube_size);
+	static std::uniform_real_distribution < float > uid_y(0.0, m_cube_size);
+	static std::uniform_real_distribution < float > uid_z(0.0, m_cube_size);
 
-	static std::uniform_real_distribution <> uid_direction(0.0, 2.0f);
+	static std::uniform_real_distribution < float > uid_direction(0.0, 2.0f);
 	static std::gamma_distribution < float > maxwell(3.0f / 2.0f, k_T);
-
-	//for (auto i = 0; i < m_num_particles; ++i)
-	//{
-	//	auto position =		Coordinates(uid_x(dre) - float(m_num_blocks - 1.0f),
-	//									uid_y(dre) - float(m_num_blocks - 1.0f),
-	//									uid_z(dre) - float(m_num_blocks - 1.0f));
-	//	auto velocity = Coordinates(maxwell(generator) * (uid_direction(dre) - 1.0f),
-	//								maxwell(generator) * (uid_direction(dre) - 1.0f),
-	//								maxwell(generator) * (uid_direction(dre) - 1.0f));
-	//	//auto velocity =		Coordinates(0.0f, 0.0f, 0.0f);
-	//	auto acceleration = Coordinates(0.0f, 0.0f, 0.0f);
-	//	
-	//	m_particles.push_back(std::make_shared<Particle>(position, velocity, acceleration));
-	//}
-
-	for (auto x = 2 * m_num_blocks / (cbrt(m_num_particles) + 1); x < 2 * m_num_blocks; x += 2 * m_num_blocks / (cbrt(m_num_particles) + 1))
-	{
-		for (auto y = 2 * m_num_blocks / (cbrt(m_num_particles) + 1); y < 2 * m_num_blocks; y += 2 * m_num_blocks / (cbrt(m_num_particles) + 1))
-		{
-			for (auto z = 2 * m_num_blocks / (cbrt(m_num_particles) + 1); z < 2 * m_num_blocks; z += 2 * m_num_blocks / (cbrt(m_num_particles) + 1))
-			{
-				auto position = Coordinates(x - m_num_blocks, y - m_num_blocks, z - m_num_blocks);
-				auto velocity = Coordinates(0.0f, 0.0f, 0.0f);
-				auto acceleration = Coordinates(0.0f, 0.0f, 0.0f);
-
-				m_particles.push_back(Particle(position, velocity, acceleration));
-			}
-		}
-	}
 
 	for (auto i = 0; i < m_num_particles; ++i)
 	{
-		find_neighbors(i);
+		auto position =		Coordinates(uid_x(dre),
+										uid_y(dre),
+										uid_z(dre));
+
+		auto velocity = Coordinates(maxwell(generator) * (uid_direction(dre) - 1.0f),
+						maxwell(generator) * (uid_direction(dre) - 1.0f),
+						maxwell(generator) * (uid_direction(dre) - 1.0f));
+		//auto velocity =		Coordinates(0.0f, 0.0f, 0.0f);
+		auto acceleration = Coordinates(0.0f, 0.0f, 0.0f);
+		m_particles.push_back(Particle(position, velocity, acceleration));
 	}
 }
+
+void System::two_particles()
+{
+	static unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine generator(seed);
+
+	// Boltzmann factor times temperature
+	const double k_T = 0.1;
+
+	static std::default_random_engine dre;
+
+	static std::uniform_real_distribution < float > uid_x(0.0, m_cube_size);
+	static std::uniform_real_distribution < float > uid_y(0.0, m_cube_size);
+	static std::uniform_real_distribution < float > uid_z(0.0, m_cube_size);
+
+	static std::uniform_real_distribution < float > uid_direction(0.0, 2.0f);
+	static std::gamma_distribution < float > maxwell(3.0f / 2.0f, k_T);
+
+	for (auto x = 5.0f; x < 5.0 + 1.75; x += 1.12)
+	{
+		auto y = m_cube_size / 2;
+		auto z = m_cube_size / 2;
+
+		auto position = Coordinates(x, y, z);
+		//auto velocity = Coordinates(maxwell(generator) * (uid_direction(dre) - 1.0f),
+		//			maxwell(generator) * (uid_direction(dre) - 1.0f),
+		//			maxwell(generator) * (uid_direction(dre) - 1.0f));
+
+		auto velocity = Coordinates(0.0f, 0.0f, 0.0f);
+		auto acceleration = Coordinates(0.0f, 0.0f, 0.0f);
+
+		m_particles.push_back(Particle(position, velocity, acceleration));
+
+	}
+}
+
+void System::face_centered_cubic()
+{
+	static unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine generator(seed);
+
+	// Boltzmann factor times temperature
+	const double k_T = 2.5;
+
+	static std::default_random_engine dre;
+
+	static std::uniform_real_distribution < float > uid_x(0.0, m_cube_size);
+	static std::uniform_real_distribution < float > uid_y(0.0, m_cube_size);
+	static std::uniform_real_distribution < float > uid_z(0.0, m_cube_size);
+
+	static std::uniform_real_distribution < float > uid_direction(0.0, 2.0f);
+	static std::gamma_distribution < float > maxwell(3.0f / 2.0f, k_T);
+
+	const auto a = 7.0f;
+	const auto layers = 5;
+	const auto columns = 5;
+	const auto rows = 5;
+	const auto add = 1.0f;
+
+
+	double x0 = -a, y0 = -a, z0 = -a, x1, y1, z1 = -a / 2;
+
+	for (int i = 0; i < layers; i++) {
+		z0 += a;
+		z1 += a;
+
+		x0 = -a;
+
+		for (int j = 0; j < columns; j++) {
+			x0 += a;
+			x1 = x0 + a / 2;
+
+			y0 = -a;
+
+			for (int k = 0; k < rows; k++) {
+				y0 += a;
+				y1 = y0 + a / 2;
+
+				auto velocity = Coordinates(maxwell(generator) * (uid_direction(dre) - 1.0f),
+											maxwell(generator) * (uid_direction(dre) - 1.0f),
+											maxwell(generator) * (uid_direction(dre) - 1.0f));
+				//auto velocity = Coordinates(0.0f, 0.0f, 0.0f);
+				auto acceleration = Coordinates(0.0f, 0.0f, 0.0f);
+
+
+				m_particles.push_back(Particle(Coordinates(x0 + add, y0 + add, z0+ add), velocity, acceleration));
+				m_particles.push_back(Particle(Coordinates(x1 + add, y1 + add, z0 + add), velocity, acceleration));
+				m_particles.push_back(Particle(Coordinates(x0 + add, y1 + add, z1 + add), velocity, acceleration));
+				m_particles.push_back(Particle(Coordinates(x0 + add, y0 + add, z1 + add), velocity, acceleration));
+			}
+		}
+	}
+}
+
 
 float System::get_distance(Particle particle_i, Particle particle_j) const
 {
@@ -127,23 +224,43 @@ void System::find_neighbors(std::size_t i)
 
 	for (auto j = 0; j < m_num_particles; ++j)
 	{
-		auto distance = get_distance(m_particles[i], m_particles[j]);
-		auto outer_distance = get_outer_distance(m_particles[i], m_particles[j]);
 
+		std::vector < Particle > images;
 
-		if ((distance <= m_radius) && (i != j))
+		for (auto x = -1.0f; x <= 1.0f; x += 1.0f)
 		{
-			m_neighbors[i].push_back(m_particles[j]);
+			for (auto y = -1.0f; y <= 1.0f; y += 1.0f)
+			{
+				for (auto z = -1.0f; z <= 1.0f; z += 1.0f)
+				{
+					images.push_back(Particle(		Coordinates(m_particles[j].get_position().m_x + x * m_cube_size,
+																m_particles[j].get_position().m_y + y * m_cube_size,
+																m_particles[j].get_position().m_z + z * m_cube_size),
+
+													m_particles[j].get_velocity(),
+													m_particles[j].get_acceleration()));
+				}
+			}
 		}
 
-		//if ((outer_distance <= m_radius) && (i != j))
-		//{
-		//	auto image_particle = Particle(	m_particles[j].get_position(), 
-		//									m_particles[j].get_velocity(),
-		//									m_particles[j].get_acceleration()) ;
-		//	image_particle.set_position((m_particles[i].get_position() - m_particles[j].get_position()) * std::pow(distance, -1) * (distance + outer_distance) + m_particles[j].get_position());
-		//	m_neighbors[i].push_back(image_particle);
-		//}
+		auto min_distance = get_distance(m_particles[i], m_particles[j]);
+		auto closest_particle = m_particles[j];
+
+		for (auto k = 0; k < std::size(images); k++)
+		{
+			auto distance = get_distance(m_particles[i], images[k]);
+			if (distance < min_distance)
+			{
+				min_distance = distance;
+				closest_particle = images[k];
+			}
+		}
+
+
+		if ((min_distance <= m_radius) && (i != j))
+		{
+			m_neighbors[i].push_back(closest_particle);
+		}
 	}
 }
 
@@ -154,7 +271,7 @@ auto System::get_force(Particle particle_i, Particle particle_j, float sigma, fl
 	auto position_j = particle_j.get_position();
 	auto distance = get_distance(particle_i, particle_j);
 
-	return  24.0f * mass * epsilon * (2.0f * std::pow(sigma, 12) / std::pow(distance, 14) -
+	return  24.0f * epsilon * (2.0f * std::pow(sigma, 12) / std::pow(distance, 14) -
 		std::pow(sigma, 6) / std::pow(distance, 8)) * (position_j - position_i);;
 }
 
@@ -170,8 +287,10 @@ auto System::get_potential(Particle particle_i, Particle particle_j, float sigma
 
 void System::update()
 {
-	auto delta_t = 10.0f;
-	auto energy = 0.0f;
+	auto delta_t = 0.01f;
+	auto energy_total = 0.0f;
+	auto energy_potential = 0.0f;
+	auto energy_kinetic = 0.0f;
 
 	for (auto i = 0; i < m_num_particles; ++i)
 	{
@@ -180,40 +299,65 @@ void System::update()
 		for (auto j = 0; j < std::size(m_neighbors[i]); ++j)
 		{
 			force += get_force(m_particles[i], m_neighbors[i][j]);
-			energy += get_potential(m_particles[i], m_neighbors[i][j]);
+			energy_potential -= get_potential(m_particles[i], m_neighbors[i][j]);
 		}
+		
+		m_particles[i].set_new_acceleration(force);
+	}
 
-		auto new_position = m_particles[i].get_position() + m_particles[i].get_velocity() * delta_t + 0.5f * force * std::pow(delta_t, 2);
-		auto new_velocity = m_particles[i].get_velocity() + 0.5f * (m_particles[i].get_acceleration() + force) * delta_t;
-		auto new_acceleration = force;
 
-		if (new_position.m_x > m_num_blocks)  { 
-			new_position.m_x = (-1.0f) * m_num_blocks + 1.0f; 
+	for (auto i = 0; i < m_num_particles; ++i)
+	{
+		auto new_position = m_particles[i].get_position() + m_particles[i].get_velocity() * delta_t + 0.5f * m_particles[i].get_acceleration() * std::pow(delta_t, 2);
+		auto new_velocity = m_particles[i].get_velocity() + 0.5f * (m_particles[i].get_acceleration() + m_particles[i].get_new_acceleration()) * delta_t;
+		auto new_acceleration = m_particles[i].get_new_acceleration();
+
+
+		if (new_position.m_x >= m_cube_size) {
+			new_position.m_x = new_position.m_x - m_cube_size;
 		}
-		if (new_position.m_x < (-1.0f) * m_num_blocks) { 
-			new_position.m_x = (m_num_blocks - 1.0f); 
+		if (new_position.m_x < 0.0f) {
+			new_position.m_x = m_cube_size - new_position.m_x;
 		}
-		if (new_position.m_y > m_num_blocks) {
-			new_position.m_y = (-1.0f) * m_num_blocks + 1.0f;
+		if (new_position.m_y >= m_cube_size) {
+			new_position.m_y = new_position.m_y - m_cube_size;
 		}
-		if (new_position.m_y < (-1.0f) * m_num_blocks) {
-			new_position.m_y = (m_num_blocks - 1.0f);
+		if (new_position.m_y < 0.0f) {
+			new_position.m_y = m_cube_size - new_position.m_y;
 		}
-		if (new_position.m_z > m_num_blocks) {
-			new_position.m_z = (-1.0f) * m_num_blocks + 1.0f;
+		if (new_position.m_z >= m_cube_size) {
+			new_position.m_z = new_position.m_z - m_cube_size;
 		}
-		if (new_position.m_z < (-1.0f) * m_num_blocks) {
-			new_position.m_z = (m_num_blocks - 1.0f);
+		if (new_position.m_z < 0.0f) {
+			new_position.m_z = m_cube_size - new_position.m_z;
 		}
 
 		m_particles[i].set_position(new_position);
 		m_particles[i].set_velocity(new_velocity);
 		m_particles[i].set_acceleration(new_acceleration);
 
-		energy += float(std::pow(m_particles[i].get_velocity().get_length(), 2));
+		energy_kinetic += float(std::pow(m_particles[i].get_velocity().get_length(), 2)) / 2;
+
 	}
 
-	std::cout << energy << std::endl;
+	energy_total = energy_kinetic + energy_potential / 2;
+
+	std::ofstream outfile;
+	outfile.open("C:\\Users\\User\\mipt\\supercomputers\\Project1\\data\\energy_k.txt", std::ios_base::app);
+	outfile << energy_kinetic << std::endl;
+	outfile.close();
+
+	outfile.open("C:\\Users\\User\\mipt\\supercomputers\\Project1\\data\\energy_p.txt", std::ios_base::app);
+	outfile << energy_potential << std::endl;
+	outfile.close();
+
+	outfile.open("C:\\Users\\User\\mipt\\supercomputers\\Project1\\data\\energy_t.txt", std::ios_base::app);
+	outfile << energy_total << std::endl;
+	outfile.close();
+
+
+	
+	std::cout << energy_total << std::endl;
 
 	for (auto i = 0; i < m_num_particles; ++i)
 	{

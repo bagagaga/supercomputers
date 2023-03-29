@@ -12,15 +12,19 @@ class System
 {
 public:
 	explicit System(std::size_t num_particles, std::size_t num_blocks, float radius) :
-		m_num_particles(num_particles), m_num_blocks(num_blocks), m_radius(radius), 
+		m_cube_size(m_num_blocks), m_num_particles(num_particles), m_num_blocks(num_blocks), m_radius(radius), 
 		m_neighbors(std::vector < std::vector < Particle > > (num_particles, std::vector < Particle > (0)))
 	{
 		initialize();
 	}
 
 	void initialize();
+	void face_centered_cubic();
+	void two_particles();
+	void random();
 	void find_neighbors(std::size_t i);
 	void update();
+
 
 	auto get_potential(Particle particle_i, Particle particle_j, float sigma = 1.0f, float epsilon = 1.0f, float mass = 1.0f) const;
 	auto get_force(Particle particle_i, Particle particle_j, float sigma = 1.0f, float epsilon = 1.0f, float mass = 1.0f) const;
@@ -37,6 +41,8 @@ private:
 
 	std::size_t m_num_particles;
 	std::size_t m_num_blocks;
+
+	float m_cube_size;
 	
 	float m_radius;
 };

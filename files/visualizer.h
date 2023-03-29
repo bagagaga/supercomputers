@@ -1,5 +1,8 @@
 #include <glut.h>
 
+#include <iostream>
+#include <fstream>
+
 #include "particle.h"
 #include "system.h"
 
@@ -8,8 +11,8 @@ namespace Visualization
 {
     double angle = 0.0;
 
-    std::size_t num_particles(3 * 3 * 3);
-    std::size_t num_blocks(20);
+    std::size_t num_particles(500);
+    std::size_t num_blocks(35);
 
     System system(Visualization::num_particles, Visualization::num_blocks, Visualization::num_blocks * 10.0f);
 }
@@ -30,19 +33,25 @@ void display()
     glMatrixMode(GL_MODELVIEW);    
 
     glLoadIdentity();                 
-    glTranslatef(0.0f, 0.0f, -7.0f);  
+    glTranslatef(0.0f, 0.0f, -2.0f * Visualization::num_blocks);
     glRotatef(Visualization::angle, 0.0, 1.0, 0.0);
 
     glColor3f(1.0f, 0.0f, 1.0f);
+
+    auto v = 1.0f;
+    auto add = Visualization::num_blocks / 2.0f;
 
     for (std::size_t i = 0; i < Visualization::num_particles; i++)
     {
         auto coordinates = Visualization::system.get_position(i);
 
-        glTranslatef(coordinates.m_x * 0.1f, coordinates.m_y * 0.1f, coordinates.m_z * 0.1f);
-        glutWireSphere(0.1, 10, 10);
-        glTranslatef(coordinates.m_x * (-0.1f), coordinates.m_y * (-0.1f), coordinates.m_z * (-0.1f));
+        glTranslatef(coordinates.m_x * v - add, coordinates.m_y * v - add, coordinates.m_z * v - add);
+        glutWireSphere(0.4, 5, 5);
+        glTranslatef(coordinates.m_x * (-v) + add, coordinates.m_y * (-v) + add, coordinates.m_z * (-v) + add);
     }
+
+    glColor3f(1.0f, 0.0f, 1.0f);
+    glutWireCube(Visualization::num_blocks);
 
     glutSwapBuffers();
 }
