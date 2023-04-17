@@ -2,47 +2,64 @@
 
 #include <memory>
 #include <vector>
-#include <cmath>
-
 #include "particle.h"
-#include "position.h"
-
 
 class System
 {
 public:
-	explicit System(std::size_t num_particles, std::size_t num_blocks, float radius) :
-		m_cube_size(m_num_blocks), m_num_particles(num_particles), m_num_blocks(num_blocks), m_radius(radius), 
-		m_neighbors(std::vector < std::vector < Particle > > (num_particles, std::vector < Particle > (0)))
+	using particle_t = std::vector < Particle >;
+
+
+public:
+	explicit System(std::size_t num_particles, double cube_size, double radius) :
+		m_num_particles(num_particles), m_cube_size(cube_size), m_radius(radius)
 	{
 		initialize();
 	}
 
 	void initialize();
-	void face_centered_cubic();
-	void two_particles();
-	void random();
-	void find_neighbors(std::size_t i);
+	//void structure();
+	void structureFCC();
+
 	void update();
 
+	auto find_min_radius(Particle & left, Particle& right);
 
-	auto get_potential(Particle particle_i, Particle particle_j, float sigma = 1.0f, float epsilon = 1.0f, float mass = 1.0f) const;
-	auto get_force(Particle particle_i, Particle particle_j, float sigma = 1.0f, float epsilon = 1.0f, float mass = 1.0f) const;
-	auto get_position(std::size_t i) const { return m_particles.at(i).get_position();}
-	float get_distance(Particle particle_i, Particle particle_j) const;
-	float get_outer_distance(Particle particle_i, Particle particle_j) const;
-	Coordinates get_intersection(const Coordinates point, const Coordinates direction, float a, float x_0, float x_1) const;
+
+	auto get_distance(const std::vector < double > & vector);
+	auto get_potential(std::vector < double > min_radius, double sigma = 1.0, double epsilon = 1.0, double mass = 1.0);
+	auto get_force(const std::vector < double > & min_radius, double sigma = 1.0, double epsilon = 1.0, double mass = 1.0);
+	auto accumulate_potential(Particle& p_i, Particle& p_j,
+		std::vector < double >& force, double& energy_potential, double sigma = 1.0, double epsilon = 1.0, double mass = 1.0);
 
 	~System() noexcept = default;
 
-private:
-	std::vector < Particle > m_particles;
-	std::vector < std::vector < Particle > > m_neighbors;
+
+public:
+	particle_t m_particles;
 
 	std::size_t m_num_particles;
-	std::size_t m_num_blocks;
 
-	float m_cube_size;
-	
-	float m_radius;
+	double m_cube_size;
+	double m_radius;
 };
+
+
+//class FCC : public System
+//{
+//public:
+//	void structure();
+//};
+
+//class TwoParticles : public System
+//{
+//public:
+//	TwoParticles(std::size_t num_particles, double cube_size, double radius) :
+//		System(num_particles, cube_size, radius)
+//	{}
+//
+//	void structure();
+//
+//	~TwoParticles() noexcept = default;
+//
+//};

@@ -1,43 +1,44 @@
 #pragma once
 
-#include <memory>
-
-#include "position.h"
+#include <vector>
+#include <random>
 
 
 class Particle
 {
 public:
+	using coordinate_t = std::vector < double >;
+public:
+	explicit Particle(const std::vector < double > & position, const std::vector < double >& velocity, 
+		const std::vector < double >& acceleration, const std::vector < double >& new_acceleration) :
+		m_position(position), m_velocity(velocity), m_acceleration(acceleration), m_new_acceleration(new_acceleration)
+		{}
 
-	Particle() noexcept = default;
-	explicit Particle(Coordinates position, Coordinates velocity, Coordinates acceleration):
-		m_position(position), m_velocity(velocity), m_acceleration(acceleration), m_new_acceleration(Coordinates(0, 0, 0))
-	{}
+	explicit Particle()
+	{
+		static std::default_random_engine generator;
+		static std::gamma_distribution<double> distribution(1.5, 0.01);
 
-	auto get_position() const noexcept { return m_position; }
-	auto get_velocity() const noexcept { return m_velocity; }
-	auto get_acceleration() const noexcept { return m_acceleration; }
-	auto get_new_acceleration() const noexcept { return m_new_acceleration; }
-
-	void set_position(float x, float y, float z)		{ m_position.set_position(x, y, z); }
-	void set_position(Coordinates coordinates) { m_position = coordinates; }
-
-	void set_velocity(float x, float y, float z)		{ m_velocity.set_position(x, y, z); }
-	void set_velocity(Coordinates coordinates) { m_velocity = coordinates; }
-
-	void set_acceleration(float x, float y, float z)	{ m_acceleration.set_position(x, y, z); }
-	void set_acceleration(Coordinates coordinates) { m_acceleration = coordinates; }
-
-	void set_new_acceleration(float x, float y, float z) { m_new_acceleration.set_position(x, y, z); }
-	void set_new_acceleration(Coordinates coordinates) { m_new_acceleration = coordinates; }
+		std::vector < double > position{ 0.0, 0.0, 0.0 };
+		m_position = position;
+		auto v_x = distribution(generator);
+		auto v_y = distribution(generator);
+		auto v_z = distribution(generator);
+		std::vector < double > velocity{ v_x, v_y, v_z };
+		m_velocity = velocity;
+		std::vector < double > acceleration{ 0.0, 0.0, 0.0 };
+		m_acceleration = acceleration;
+		std::vector < double > new_acceleration{ 0.0, 0.0, 0.0 };
+		m_new_acceleration = new_acceleration;
+	}
 
 
-	~Particle() noexcept = default;
+	~Particle() noexcept  = default;
 
-private:
-	Coordinates m_position;
-	Coordinates m_velocity;
-	Coordinates m_acceleration;
-	Coordinates m_new_acceleration;
+public:
+	coordinate_t m_position;
+	coordinate_t m_velocity;
+	coordinate_t m_acceleration;
+	coordinate_t m_new_acceleration;
 
 };

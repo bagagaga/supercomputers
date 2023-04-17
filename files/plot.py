@@ -15,13 +15,13 @@ if __name__ == '__main__':
     energy_p = []
     energy_t = []
 
-    with open("C:\\Users\\User\\mipt\\supercomputers\\Project1\\data\\energy_k.txt", 'r') as f:
+    with open("C:\\Users\\User\\mipt\\supercomputers\\Project2\\data\\energy_k.txt", 'r') as f:
         for e in f.readlines():
             energy_k.append(float(e.replace('\n', '')))
-    with open("C:\\Users\\User\\mipt\\supercomputers\\Project1\\data\\energy_p.txt", 'r') as f:
+    with open("C:\\Users\\User\\mipt\\supercomputers\\Project2\\data\\energy_p.txt", 'r') as f:
         for e in f.readlines():
             energy_p.append(float(e.replace('\n', '')))
-    with open("C:\\Users\\User\\mipt\\supercomputers\\Project1\\data\\energy_t.txt", 'r') as f:
+    with open("C:\\Users\\User\\mipt\\supercomputers\\Project2\\data\\energy_t.txt", 'r') as f:
         for e in f.readlines():
             energy_t.append(float(e.replace('\n', '')))
 
