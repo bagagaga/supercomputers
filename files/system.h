@@ -18,7 +18,7 @@ public:
 	}
 
 	void initialize();
-	//void structure();
+	void structure();
 	void structureFCC();
 
 	void update();

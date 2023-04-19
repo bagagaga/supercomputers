@@ -13,7 +13,7 @@
 void System::initialize()
 {
 	//Timer <> t_n("create system");
-	structureFCC();
+	structure();
 	//t_n.stop();
 
 	std::ofstream outfile;
@@ -25,19 +25,19 @@ void System::initialize()
 	outfile.close();
 }
 
-//void System::structure()
-//{
-//	auto half = m_cube_size / 2;
-//	auto distance = 1.25;
-//
-//	for (auto i = 0; i < m_num_particles; i++)
-//	{
-//		m_particles.push_back(Particle(	std::vector < double > {half + i * distance, half, half}, 
-//										std::vector < double >{0.0, 0.0, 0.0},
-//										std::vector < double >{0.0, 0.0, 0.0},
-//										std::vector < double >{0.0, 0.0, 0.0}));
-//	}
-//}
+void System::structure()
+{
+	auto half = m_cube_size / 2;
+	auto distance = 0.9;
+
+	for (auto i = 0; i < m_num_particles; i++)
+	{
+		m_particles.push_back(Particle(	std::vector < double > {half + i * distance, half, half}, 
+										std::vector < double >{0.0, 0.0, 0.0},
+										std::vector < double >{0.0, 0.0, 0.0},
+										std::vector < double >{0.0, 0.0, 0.0}));
+	}
+}
 
 void System::structureFCC()
 {
@@ -152,7 +152,7 @@ auto System::accumulate_potential(Particle & p_i, Particle & p_j,
 	auto min_radius = find_min_radius(p_i, p_j);
 	auto distance = get_distance(min_radius);
 	
-	auto r_12 = 4.0 * epsilon * std::pow(sigma / distance, 12) - std::pow(sigma / distance, 6);
+	auto r_12 = 4.0 * epsilon * (std::pow(sigma / distance, 12) - std::pow(sigma / distance, 6));
 	auto r_2 = std::pow(distance, 2);
 
 	energy_potential += r_12;
@@ -166,14 +166,14 @@ auto System::accumulate_potential(Particle & p_i, Particle & p_j,
 	auto itA = force.begin(); auto itB = min_radius.begin(); 
 	for (; (itA != force.end()) && (itB != min_radius.end()); (++itA, ++itB))
 	{
-		*itA = r_14 * *itB;
+		*itA += r_14 * *itB;
 	}
 
 }
 
 void System::update()
 {
-	auto delta_t = 0.01;
+	auto delta_t = 0.001;
 	auto energy_total = 0.0;
 	auto energy_potential = 0.0;
 	auto energy_kinetic = 0.0;
@@ -201,12 +201,17 @@ void System::update()
 
 	auto cycle_update = [this, &delta_t, &energy_kinetic](auto & p) {
 
+		energy_kinetic += std::pow(get_distance(p.m_velocity), 2) / 2.0;
+
 		auto itA = p.m_position.begin(); auto itB = p.m_velocity.begin(); 
 		auto itC = p.m_acceleration.begin(); auto itD = p.m_new_acceleration.begin();
 		for (; (itA != p.m_position.end()) && (itB != p.m_velocity.end()) &&
 			(itC != p.m_acceleration.end()) && (itD != p.m_new_acceleration.end()); (++itA, ++itB, ++itC, ++itD))
 		{
-			*itA = *itA + *itB * delta_t + 0.5 * *itC * delta_t * delta_t;
+			//*itA = *itA + *itB * delta_t + 0.5 * *itC * delta_t * delta_t; // leapfrog
+
+			*itA = *itA + *itB * delta_t;
+
 
 			if (*itA >= m_cube_size) {
 				*itA = *itA - m_cube_size;
@@ -214,12 +219,12 @@ void System::update()
 			if (*itA < 0.0) {
 				*itA = m_cube_size - *itA;
 			}
-			*itB = *itB + 0.5 * (*itC + *itD) * delta_t;
+			//*itB = *itB + 0.5 * (*itC + *itD) * delta_t; // leapfrog
+
+			*itB = *itB + *itD * delta_t;
 
 			*itC = *itD;
 		}
-
-		energy_kinetic += std::pow(get_distance(p.m_velocity), 2) / 2.0;
 	};
 
 	std::for_each(m_particles.begin(), m_particles.end(), cycle_update);

@@ -16,8 +16,12 @@ public:
 
 	explicit Particle()
 	{
+		auto T = 3.0;
+		auto k = 1.0;
+		auto mass = 1.0;
+
 		static std::default_random_engine generator;
-		static std::gamma_distribution<double> distribution(1.5, 0.01);
+		static std::normal_distribution<double> distribution(0, std::sqrt(k * T / mass));
 
 		std::vector < double > position{ 0.0, 0.0, 0.0 };
 		m_position = position;

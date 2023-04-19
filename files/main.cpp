@@ -13,8 +13,8 @@
 namespace Visualization
 {
 
-    std::size_t num_particles(500);
-    std::size_t num_blocks(77.15);
+    std::size_t num_particles(2);
+    std::size_t num_blocks(7.7);
 
     System system(Visualization::num_particles, Visualization::num_blocks, Visualization::num_blocks * 10.0f);
 
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
         system("color 0A");
 
         char a = 177, b = 219;
-        auto num_steps = 100000;
+        auto num_steps = 10000;
         auto dump_step_len = 100;
         auto len = num_steps / dump_step_len;
 
